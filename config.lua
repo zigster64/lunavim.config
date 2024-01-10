@@ -339,6 +339,9 @@ lvim.plugins = {
     event = "VeryLazy",
     config = function()
       require("chatgpt").setup()
+      keymaps = {
+        submit = "<C-s>"
+      }
     end,
     dependencies = {
       "MunifTanjim/nui.nvim",
