@@ -87,16 +87,20 @@ lvim.builtin.which_key.mappings["j"] = {
 
 lvim.builtin.which_key.mappings["z"] = {
   name = "+Zig",
-  a = { ":split | terminal<cr>", "Terminal" },
-  z = { ":split term://zig build -freference-trace<cr>", "Build" },
-  t = { ":split term://zig build test -freference-trace<cr>", "Test" },
-  f = { ":split term://zig fmt .<cr>", "Zig Fmt" },
-  c = { ":split term://rm -rf zig-cache zig-out<cr>", "Clear Cache" },
-  e = { ":split term://zig env<cr>", "Env" },
-  h = { ":split term://zig build -help<cr>", "Help" },
-  r = { ":split term://zig build run<cr>", "Run" },
-  v = { ":split term://zig version<cr>", "Version" },
-  q = { ":bw<cr>", "Wipe Output" },
+  a = { "<cmd>ToggleTerm<cr>", "Terminal" },
+  -- TermExec runs the command in a toggleable window that won't create a 'tab'
+  z = { "<cmd>TermExec cmd='zig build -freference-trace=11' direction=horizontal go_back=0<cr>", "Build" },
+  Z = { "<cmd>TermExec cmd='zig build -freference-trace=11 -Doptimize=ReleaseFast' direction=horizontal go_back=0<cr>", "BuildFast" },
+  t = { "<cmd>TermExec cmd='zig build test -freference-trace=11' direction=horizontal go_back=0<cr>", "Test" },
+  f = { "<cmd>TermExec cmd='zig build test -freference-trace=11' direction=horizontal go_back=0<cr>", "Test" },
+  F = { "<cmd>TermExec cmd='zig fmt .' direction=horizontal<cr>", "Zig Fmt" },
+  c = { "<cmd>TermExec cmd='rm -rf zig-cache zig-out' direction=horizontal<cr>", "Clear Cache" },
+  e = { "<cmd>TermExec cmd='zig env' direction=horizontal<cr>", "Env" },
+  h = { "<cmd>TermExec cmd='zig build -help' direction=horizontal<cr>", "Help" },
+  r = { "<cmd>TermExec cmd='zig build run' direction=horizontal<cr>", "Run" },
+  v = { "<cmd>TermExec cmd='zig version' direction=horizontal<cr>", "Version" },
+  -- This will close the most recent terminal toggle window
+  q = { "<cmd>ToggleTerm<cr>", "Close/Toggle Terminal" },
 }
 
 lvim.builtin.which_key.mappings["m"] = {
@@ -323,33 +327,33 @@ dap.configurations.zig = {
 
 -- setup copilot and chatgpt
 lvim.plugins = {
-  {
-    "zbirenbaum/copilot.lua",
-    cmd = "Copilot",
-    event = "InsertEnter",
-  },
-  {
-    "zbirenbaum/copilot-cmp",
-    after = { "copilot.lua" },
-    config = function()
-      require("copilot_cmp").setup()
-    end,
-  },
-  {
-    "jackMort/ChatGPT.nvim",
-    event = "VeryLazy",
-    config = function()
-      require("chatgpt").setup()
-      keymaps = {
-        submit = "<C-s>"
-      }
-    end,
-    dependencies = {
-      "MunifTanjim/nui.nvim",
-      "nvim-lua/plenary.nvim",
-      "nvim-telescope/telescope.nvim"
-    }
-  },
+  -- {
+  --   "zbirenbaum/copilot.lua",
+  --   cmd = "Copilot",
+  --   event = "InsertEnter",
+  -- },
+  -- {
+  --   "zbirenbaum/copilot-cmp",
+  --   after = { "copilot.lua" },
+  --   config = function()
+  --     require("copilot_cmp").setup()
+  --   end,
+  -- },
+  -- {
+  --   "jackMort/ChatGPT.nvim",
+  --   event = "VeryLazy",
+  --   config = function()
+  --     require("chatgpt").setup()
+  --     keymaps = {
+  --       submit = "<C-s>"
+  --     }
+  --   end,
+  --   dependencies = {
+  --     "MunifTanjim/nui.nvim",
+  --     "nvim-lua/plenary.nvim",
+  --     "nvim-telescope/telescope.nvim"
+  --   }
+  -- },
   {
     "sourcegraph/sg.nvim",
     dependencies = {
@@ -360,17 +364,15 @@ lvim.plugins = {
     build = "nvim -l build/init.lua",
   },
   {
-    "kiddos/gemini.nvim",
-    config = function()
-      require("gemini").setup()
-    end,
-  }
+    "folke/trouble.nvim",
+    cmd = "TroubleToggle",
+  },
 }
 
-local ok, copilot = pcall(require, "copilot")
-if not ok then
-  return
-end
+-- local ok, copilot = pcall(require, "copilot")
+-- if not ok then
+--   return
+-- end
 
 copilot.setup {
   suggestion = {
