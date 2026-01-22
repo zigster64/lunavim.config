@@ -426,7 +426,16 @@ require("sg").setup {
   -- on_attach = your_custom_lsp_attach_function
 }
 
-require("lvim.lsp.manager").setup("zls")
+require("lvim.lsp.manager").setup("zls", {
+  -- vim.fn.expand resolves the "~" to /Users/steve or /home/steve automatically
+  cmd = { vim.fn.expand("~/Code/Zig/zls/zig-out/bin/zls") },
+  settings = {
+    zls = {
+      enable_snippets = true,
+      enable_autofix = true,
+    },
+  },
+})
 
 -- Autoclear terminal buffers on exit
 vim.cmd([[
