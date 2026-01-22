@@ -53,12 +53,12 @@ lvim.keys.normal_mode["<C-1>"] = ":tabfirst<cr>"
 lvim.keys.normal_mode[";;"] = "A;<esc>:w<cr>"
 lvim.keys.insert_mode["<C-E>"] = "<esc>A;<esc>:w<cr>"
 
-lvim.keys.normal_mode["<C-C>"] = "<cmd>ChatGPT<CR>"
-lvim.keys.visual_mode["<C-C>"] = "<cmd>ChatGPTEditWithInstruction<CR>"
-lvim.keys.visual_mode["<C-T>"] = "<cmd>ChatGPTRun add_tests<CR>"
+-- lvim.keys.normal_mode["<C-C>"] = "<cmd>ChatGPT<CR>"
+-- lvim.keys.visual_mode["<C-C>"] = "<cmd>ChatGPTEditWithInstruction<CR>"
+-- lvim.keys.visual_mode["<C-T>"] = "<cmd>ChatGPTRun add_tests<CR>"
 
-lvim.keys.normal_mode["<C-S-C>"] = "<cmd>CodyChat<CR>"
-lvim.keys.visual_mode["<C-S-C>"] = "<cmd>CodyAsk<CR>"
+-- lvim.keys.normal_mode["<C-S-C>"] = "<cmd>CodyChat<CR>"
+-- lvim.keys.visual_mode["<C-S-C>"] = "<cmd>CodyAsk<CR>"
 
 -- lvim.keys.normal_mode["<C-n>"] = "<cmd>Sourcegraph<CR>"
 
@@ -115,8 +115,9 @@ lvim.builtin.which_key.mappings["j"] = {
 
 lvim.builtin.which_key.mappings["z"] = {
   name = "+Zig",
-  a = { "<cmd>ToggleTerm<cr>", "Terminal" },
   -- TermExec runs the command in a toggleable window that won't create a 'tab'
+  --
+  a = { "<cmd>ToggleTerm<cr>", "Terminal" },
   z = { "<cmd>TermExec cmd='zig build -freference-trace=11' direction=horizontal go_back=0<cr>", "Build" },
   Z = { "<cmd>TermExec cmd='zig build -freference-trace=11 -Doptimize=ReleaseFast' direction=horizontal go_back=0<cr>", "BuildFast" },
   t = { "<cmd>TermExec cmd='zig build test -freference-trace=11' direction=horizontal go_back=0<cr>", "Test" },
@@ -142,22 +143,38 @@ lvim.builtin.which_key.mappings["m"] = {
   q = { ":bw<cr>", "Wipe Output" },
 }
 
-lvim.builtin.which_key.mappings["G"] = {
-  name = "ChatGPT",
-  c = { "<cmd>ChatGPT<CR>", "ChatGPT" },
-  e = { "<cmd>ChatGPTEditWithInstruction<CR>", "Edit with instruction", mode = { "n", "v" } },
-  g = { "<cmd>ChatGPTRun grammar_correction<CR>", "Grammar Correction", mode = { "n", "v" } },
-  t = { "<cmd>ChatGPTRun translate<CR>", "Translate", mode = { "n", "v" } },
-  k = { "<cmd>ChatGPTRun keywords<CR>", "Keywords", mode = { "n", "v" } },
-  d = { "<cmd>ChatGPTRun docstring<CR>", "Docstring", mode = { "n", "v" } },
-  a = { "<cmd>ChatGPTRun add_tests<CR>", "Add Tests", mode = { "n", "v" } },
-  o = { "<cmd>ChatGPTRun optimize_code<CR>", "Optimize Code", mode = { "n", "v" } },
-  s = { "<cmd>ChatGPTRun summarize<CR>", "Summarize", mode = { "n", "v" } },
-  f = { "<cmd>ChatGPTRun fix_bugs<CR>", "Fix Bugs", mode = { "n", "v" } },
-  x = { "<cmd>ChatGPTRun explain_code<CR>", "Explain Code", mode = { "n", "v" } },
-  r = { "<cmd>ChatGPTRun roxygen_edit<CR>", "Roxygen Edit", mode = { "n", "v" } },
-  l = { "<cmd>ChatGPTRun code_readability_analysis<CR>", "Code Readability Analysis", mode = { "n", "v" } },
-}
+-- Use <leader>G (Shift+g) for Gemini AI
+-- lvim.builtin.which_key.mappings["G"] = {
+--   name = "Gemini AI",
+--   c = { "<cmd>CodeCompanionChat Toggle<cr>", "Chat (Toggle)" },
+--   i = { "<cmd>CodeCompanion<cr>", "Inline Prompt" },
+--   e = { "<cmd>CodeCompanion /explain<cr>", "Explain Code" },
+--   f = { "<cmd>CodeCompanion /fix<cr>", "Fix Code" },
+--   t = { "<cmd>CodeCompanion /tests<cr>", "Generate Tests" },
+--   A = { "<cmd>CodeCompanionActions<cr>", "Actions Palette" },
+-- }
+
+-- -- Visual Mode Support (Select code -> Space + G + e)
+-- vim.keymap.set("v", "<leader>Ge", "<cmd>CodeCompanion /explain<cr>", { noremap = true, silent = true })
+-- vim.keymap.set("v", "<leader>Gf", "<cmd>CodeCompanion /fix<cr>", { noremap = true, silent = true })
+-- vim.keymap.set("v", "<leader>Gi", "<cmd>CodeCompanion<cr>", { noremap = true, silent = true })
+
+-- lvim.builtin.which_key.mappings["G"] = {
+--   name = "ChatGPT",
+--   c = { "<cmd>ChatGPT<CR>", "ChatGPT" },
+--   e = { "<cmd>ChatGPTEditWithInstruction<CR>", "Edit with instruction", mode = { "n", "v" } },
+--   g = { "<cmd>ChatGPTRun grammar_correction<CR>", "Grammar Correction", mode = { "n", "v" } },
+--   t = { "<cmd>ChatGPTRun translate<CR>", "Translate", mode = { "n", "v" } },
+--   k = { "<cmd>ChatGPTRun keywords<CR>", "Keywords", mode = { "n", "v" } },
+--   d = { "<cmd>ChatGPTRun docstring<CR>", "Docstring", mode = { "n", "v" } },
+--   a = { "<cmd>ChatGPTRun add_tests<CR>", "Add Tests", mode = { "n", "v" } },
+--   o = { "<cmd>ChatGPTRun optimize_code<CR>", "Optimize Code", mode = { "n", "v" } },
+--   s = { "<cmd>ChatGPTRun summarize<CR>", "Summarize", mode = { "n", "v" } },
+--   f = { "<cmd>ChatGPTRun fix_bugs<CR>", "Fix Bugs", mode = { "n", "v" } },
+--   x = { "<cmd>ChatGPTRun explain_code<CR>", "Explain Code", mode = { "n", "v" } },
+--   r = { "<cmd>ChatGPTRun roxygen_edit<CR>", "Roxygen Edit", mode = { "n", "v" } },
+--   l = { "<cmd>ChatGPTRun code_readability_analysis<CR>", "Code Readability Analysis", mode = { "n", "v" } },
+-- }
 
 -- TODO: User Config for predefined plugins
 -- After changing plugin config exit and reopen LunarVim, Run :PackerInstall :PackerCompile
@@ -355,6 +372,37 @@ dap.configurations.zig = {
 
 -- setup copilot and chatgpt
 lvim.plugins = {
+  {
+    "olimorris/codecompanion.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
+    config = function()
+      require("codecompanion").setup({
+        strategies = {
+          chat = { adapter = "gemini" },
+          inline = { adapter = "gemini" },
+          agent = { adapter = "gemini" },
+        },
+        adapters = {
+          gemini = function()
+            return require("codecompanion.adapters").extend("gemini", {
+              env = {
+                -- This reads the API key you set in your zshrc/bashrc
+                api_key = "cmd:echo $GEMINI_API_KEY",
+              },
+              schema = {
+                model = {
+                  default = "gemini-1.5-pro-latest",
+                },
+              },
+            })
+          end,
+        },
+      })
+    end,
+  },
   -- {
   --   "zbirenbaum/copilot.lua",
   --   cmd = "Copilot",
@@ -432,6 +480,8 @@ require("lvim.lsp.manager").setup("zls", {
     zls = {
       enable_snippets = true,
       enable_autofix = true,
+      enable_build_on_save = true,
+      build_on_save_step = "check",
     },
   },
   -- Add this callback to trigger the fix on save
