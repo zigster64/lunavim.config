@@ -372,6 +372,19 @@ dap.configurations.zig = {
 
 -- setup copilot and chatgpt
 lvim.plugins = {
+  -- 1. FIX BUFFERLINE: Unpin it so it works on Neovim 0.11
+  {
+    "akinsho/bufferline.nvim",
+    version = false, -- Disable LunarVim's version pin
+  },
+
+  -- 2. FIX TREESITTER: Force master branch
+  {
+    "nvim-treesitter/nvim-treesitter",
+    version = false,
+    branch = "master",
+    build = ":TSUpdate",
+  },
   {
     "olimorris/codecompanion.nvim",
     dependencies = {
