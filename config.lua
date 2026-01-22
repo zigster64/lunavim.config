@@ -8,8 +8,36 @@ an executable
 ]]
 -- THESE ARE EXAMPLE CONFIGS FEEL FREE TO CHANGE TO WHATEVER YOU WANT
 --
+-- ~/.config/lvim/config.lua
 
+-------------------------------------------------------------------------------
+-- HOTFIX: Zig 0.16 Nightly + Neovim Crash
+-------------------------------------------------------------------------------
+-- The built-in zig.vim plugin crashes on the new `zig env` output format.
+-- We manually fetch the std_dir here using Lua to bypass the broken Vimscript parser.
+-------------------------------------------------------------------------------
+local function setup_zig_fix()
+  -- Try to execute zig env
+  local handle = io.popen('zig env 2>/dev/null')
+  if not handle then return end
+  local result = handle:read("*a")
+  handle:close()
 
+  if not result or result == "" then return end
+
+  -- Parse the output for .std_dir = "..."
+  for line in result:gmatch("[^\r\n]+") do
+    local path = line:match('%.std_dir%s*=%s*"(.-)"')
+    if path then
+      -- Set the global variable so zig.vim skips its own broken detection
+      vim.g.zig_std_dir = path
+      break
+    end
+  end
+end
+
+setup_zig_fix()
+-------------------------------------------------------------------------------
 -- general
 lvim.log.level = "warn"
 lvim.format_on_save.enabled = true
