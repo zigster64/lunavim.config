@@ -427,7 +427,6 @@ require("sg").setup {
 }
 
 require("lvim.lsp.manager").setup("zls", {
-  -- vim.fn.expand resolves the "~" to /Users/steve or /home/steve automatically
   cmd = { vim.fn.expand("~/Code/Zig/zls/zig-out/bin/zls") },
   settings = {
     zls = {
@@ -435,6 +434,19 @@ require("lvim.lsp.manager").setup("zls", {
       enable_autofix = true,
     },
   },
+  -- Add this callback to trigger the fix on save
+  on_attach = function(client, bufnr)
+    vim.api.nvim_create_autocmd("BufWritePre", {
+      buffer = bufnr,
+      callback = function()
+        -- Attempt to apply the 'source.fixAll' action provided by ZLS
+        vim.lsp.buf.code_action({
+          context = { only = { "source.fixAll" } },
+          apply = true,
+        })
+      end,
+    })
+  end,
 })
 
 -- Autoclear terminal buffers on exit
