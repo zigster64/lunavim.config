@@ -1,5 +1,3 @@
-cmd = { vim.fn.expand("~/Code/Zig/zls/zig-out/bin/zls")
-},
 {
   "zls.enable_snippets": true,
   "zls.enable_autofix": true
