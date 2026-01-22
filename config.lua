@@ -9,7 +9,28 @@ an executable
 -- THESE ARE EXAMPLE CONFIGS FEEL FREE TO CHANGE TO WHATEVER YOU WANT
 --
 -- ~/.config/lvim/config.lua
+-------------------------------------------------------------------------------
+-- HOTFIX: Neovim 0.11 Nightly + Treesitter Crash
+-------------------------------------------------------------------------------
+-- Neovim 0.11 moved 'trim!' and 'has-ancestor?' into core.
+-- This wrapper suppresses the crash when nvim-treesitter tries to add them again.
+-------------------------------------------------------------------------------
+local function safe_add(orig_func)
+  return function(...)
+    local status, err = pcall(orig_func, ...)
+    if not status and err and not err:match("Overriding existing") then
+      -- Only re-throw errors that AREN'T about overriding existing items
+      error(err)
+    end
+  end
+end
 
+if vim.treesitter.query then
+  vim.treesitter.query.add_predicate = safe_add(vim.treesitter.query.add_predicate)
+  vim.treesitter.query.add_directive = safe_add(vim.treesitter.query.add_directive)
+end
+-------------------------------------------------------------------------------
+---
 -------------------------------------------------------------------------------
 -- HOTFIX: Zig 0.16 Nightly + Neovim Crash
 -------------------------------------------------------------------------------
