@@ -134,22 +134,20 @@ lvim.builtin.which_key.mappings["j"] = {
   c = { ":split term://tsc<cr>", "Compile TSC" },
 }
 
+-- Ensure the mappings table exists before assigning to it
 lvim.builtin.which_key.mappings["z"] = {
-  name = "+Zig",
-  -- TermExec runs the command in a toggleable window that won't create a 'tab'
-  --
+  name = "Zig",
   a = { "<cmd>ToggleTerm<cr>", "Terminal" },
   z = { "<cmd>TermExec cmd='zig build -freference-trace=11' direction=horizontal go_back=0<cr>", "Build" },
   Z = { "<cmd>TermExec cmd='zig build -freference-trace=11 -Doptimize=ReleaseFast' direction=horizontal go_back=0<cr>", "BuildFast" },
   t = { "<cmd>TermExec cmd='zig build test -freference-trace=11' direction=horizontal go_back=0<cr>", "Test" },
-  f = { "<cmd>TermExec cmd='zig build test -freference-trace=11' direction=horizontal go_back=0<cr>", "Test" },
+  f = { "<cmd>TermExec cmd='zig build test -freference-trace=11' direction=horizontal go_back=0<cr>", "Test (Alt)" },
   F = { "<cmd>TermExec cmd='zig fmt .' direction=horizontal<cr>", "Zig Fmt" },
   c = { "<cmd>TermExec cmd='rm -rf zig-cache zig-out' direction=horizontal<cr>", "Clear Cache" },
   e = { "<cmd>TermExec cmd='zig env' direction=horizontal<cr>", "Env" },
   h = { "<cmd>TermExec cmd='zig build -help' direction=horizontal<cr>", "Help" },
   r = { "<cmd>TermExec cmd='zig build run' direction=horizontal<cr>", "Run" },
   v = { "<cmd>TermExec cmd='zig version' direction=horizontal<cr>", "Version" },
-  -- This will close the most recent terminal toggle window
   q = { "<cmd>ToggleTerm<cr>", "Close/Toggle Terminal" },
 }
 
@@ -210,6 +208,7 @@ lvim.builtin.treesitter.ensure_installed = {
   "bash",
   "c",
   "go",
+  "html",
   "javascript",
   "json",
   "lua",
@@ -592,3 +591,20 @@ gopher.setup {
     iferr = "iferr",
   },
 }
+
+require 'lspconfig'.sourcekit.setup {
+  capabilities = capabilities, -- your standard cmp/lsp capabilities
+  on_attach = on_attach,       -- your standard keybindings
+  root_dir = function(filename, _)
+    return require 'lspconfig'.util.root_pattern("build.zig", "Package.swift", ".git")(filename)
+  end,
+}
+
+-- Bypass the Tahoe 26.2 / Treesitter ABI 15 deadlock
+lvim.builtin.treesitter.highlight.disable = { "swift" }
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "swift",
+  callback = function()
+    vim.opt_local.syntax = "on" -- Fallback to standard regex highlighting
+  end,
+})
