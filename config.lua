@@ -62,6 +62,7 @@ setup_zig_fix()
 -- general
 lvim.log.level = "warn"
 lvim.format_on_save.enabled = true
+lvim.format_on_save.pattern = { "*.zig", "*.swift" } -- Only include what you WANT to format
 lvim.colorscheme = "lunar"
 -- to disable icons and use a minimalist setup, uncomment the following
 -- lvim.use_icons = false
@@ -81,7 +82,7 @@ lvim.keys.insert_mode["<C-E>"] = "<esc>A;<esc>:w<cr>"
 -- lvim.keys.normal_mode["<C-S-C>"] = "<cmd>CodyChat<CR>"
 -- lvim.keys.visual_mode["<C-S-C>"] = "<cmd>CodyAsk<CR>"
 
--- lvim.keys.normal_mode["<C-n>"] = "<cmd>Sourcegraph<CR>"
+lvim.keys.normal_mode["<C-n>"] = "<cmd>Sourcegraph<CR>"
 
 -- nnoremap <space>ss <cmd>lua require('sg.extensions.telescope').fuzzy_search_results()<CR>
 -- lvim.keys.normal_mode["<S-l>"] = ":BufferLineCycleNext<CR>"
@@ -499,13 +500,16 @@ vim.api.nvim_set_keymap("n", "<c-a>", "<cmd>lua require('copilot.suggestion').to
 
 
 -- Sourcegraph configuration. All keys are optional
-require("sg").setup {
-  -- Pass your own custom attach function
-  --    If you do not pass your own attach function, then the following maps are provide:
-  --        - gd -> goto definition
-  --        - gr -> goto references
-  -- on_attach = your_custom_lsp_attach_function
-}
+local ok, sg = pcall(require, "sg")
+if ok then
+  sg.setup {
+    on_attach = function(client, bufnr)
+      vim.keymap.set("n", "gd", vim.lsp.buf.definition, { noremap = true, silent = true, buffer = bufnr })
+    end,
+  }
+end
+
+vim.keymap.set("n", "gd", vim.lsp.buf.definition, { noremap = true, silent = true })
 
 require("lvim.lsp.manager").setup("zls", {
   cmd = { vim.fn.expand("~/Code/Zig/zls/zig-out/bin/zls") },
@@ -608,3 +612,24 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.syntax = "on" -- Fallback to standard regex highlighting
   end,
 })
+
+-- Ensure tree-sitter highlights Elixir and Heex
+lvim.builtin.treesitter.highlight.enable = true
+lvim.builtin.treesitter.ensure_installed = {
+  "elixir",
+  "heex",
+  "html", -- Useful for base tag highlighting
+}
+
+-- Lexical/LSP setup (since you moved to Lexical)
+-- This ensures the LSP knows how to handle the templates
+require("lvim.lsp.manager").setup("lexical", {
+  filetypes = { "elixir", "eelixir", "heex" },
+  settings = {
+    lexical = {
+      -- You can add lexical specific settings here if needed
+    }
+  }
+})
+
+-- Disable formatting for specific file types or patterns
