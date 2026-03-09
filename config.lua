@@ -10,7 +10,13 @@ an executable
 --
 -- ~/.config/lvim/config.lua
 -------------------------------------------------------------------------------
--- HOTFIX: Neovim 0.11 Nightly + Treesitter Crash
+-- HOTFIX: Neovim 0.11 TSNode Metatable Compatibility
+-------------------------------------------------------------------------------
+
+-- Fallback for older nvim-treesitter query predicates
+if vim.treesitter.query and not vim.treesitter.query.get_node_text then
+  vim.treesitter.query.get_node_text = vim.treesitter.get_node_text
+end
 -------------------------------------------------------------------------------
 -- Neovim 0.11 moved 'trim!' and 'has-ancestor?' into core.
 -- This wrapper suppresses the crash when nvim-treesitter tries to add them again.
@@ -29,6 +35,30 @@ if vim.treesitter.query then
   vim.treesitter.query.add_predicate = safe_add(vim.treesitter.query.add_predicate)
   vim.treesitter.query.add_directive = safe_add(vim.treesitter.query.add_directive)
 end
+
+-- HOTFIX: Patch has-type? predicate for Neovim 0.11 TSNode API change
+vim.defer_fn(function()
+  local ok, query = pcall(require, "vim.treesitter.query")
+  -- The real target is nvim-treesitter's query module
+  local ok2, ts_query = pcall(require, "nvim-treesitter.query")
+  
+  -- Directly override the broken predicate by re-registering it safely
+  local ts_ok, vim_query = pcall(require, "vim.treesitter")
+  
+  if vim.treesitter.query and vim.treesitter.query.add_predicate then
+    vim.treesitter.query.add_predicate("has-type?", function(match, _pattern, _bufnr, pred)
+      local node = match[pred[2]]
+      if not node then return true end
+      -- Neovim 0.11 compat: use vim.treesitter.get_node_text fallback
+      local node_type = type(node.type) == "function" and node:type()
+        or (getmetatable(node) and getmetatable(node).type and getmetatable(node).type(node))
+        or nil
+      if not node_type then return false end
+      local types = { unpack(pred, 3) }
+      return vim.tbl_contains(types, node_type)
+    end, { force = true })
+  end
+end, 150)
 -------------------------------------------------------------------------------
 ---
 -------------------------------------------------------------------------------
@@ -62,7 +92,7 @@ setup_zig_fix()
 -- general
 lvim.log.level = "warn"
 lvim.format_on_save.enabled = true
-lvim.format_on_save.pattern = { "*.zig", "*.swift" } -- Only include what you WANT to format
+lvim.format_on_save.pattern = { "*.zig", "*.swift", "*.html", "*.css", "*.js", "*.erl", "*.ex" } -- Only include what you WANT to format
 lvim.colorscheme = "lunar"
 -- to disable icons and use a minimalist setup, uncomment the following
 -- lvim.use_icons = false
@@ -398,13 +428,24 @@ lvim.plugins = {
     "akinsho/bufferline.nvim",
     version = false, -- Disable LunarVim's version pin
   },
-
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    opts = {},
+  },
   -- 2. FIX TREESITTER: Force master branch
   {
     "nvim-treesitter/nvim-treesitter",
     version = false,
     branch = "master",
     build = ":TSUpdate",
+    config = function()
+      require("nvim-treesitter.configs").setup({
+        -- Your existing treesitter settings from lvim.builtin.treesitter
+        -- will be merged here by LunaVim automatically, but
+        -- forcing a refresh of the predicates often helps.
+      })
+    end
   },
   {
     "olimorris/codecompanion.nvim",
@@ -621,6 +662,11 @@ lvim.builtin.treesitter.ensure_installed = {
   "html", -- Useful for base tag highlighting
 }
 
+lvim.builtin.treesitter.indent = {
+  enable = false, -- Disable globally for 0.11 stability
+  disable = { "javascript", "typescript", "tsx" }
+}
+
 -- Lexical/LSP setup (since you moved to Lexical)
 -- This ensures the LSP knows how to handle the templates
 require("lvim.lsp.manager").setup("lexical", {
@@ -632,4 +678,14 @@ require("lvim.lsp.manager").setup("lexical", {
   }
 })
 
--- Disable formatting for specific file types or patterns
+vim.defer_fn(function()
+  local ok, configs = pcall(require, "nvim-treesitter.configs")
+  if ok then
+    configs.setup({
+      indent = {
+        enable = false,
+        disable = { "javascript", "typescript", "tsx", "javascript" },
+      },
+    })
+  end
+end, 100)
