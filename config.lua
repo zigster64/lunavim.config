@@ -689,3 +689,53 @@ vim.defer_fn(function()
     })
   end
 end, 100)
+
+
+-- Clear matches when entering insert mode so it doesn't distract while typing
+vim.api.nvim_create_autocmd("InsertEnter", {
+  pattern = "*",
+  callback = function()
+    vim.cmd([[call clearmatches()]])
+  end,
+})
+-- Force a high-visibility highlight group
+vim.api.nvim_set_hl(0, "ExtraWhitespace", { bg = "#FF0000", fg = "#FFFFFF" })
+
+-- Apply specifically when entering any buffer or switching files
+vim.api.nvim_create_autocmd({ "BufWinEnter", "FileType" }, {
+  pattern = "*", -- This covers .sql, .zig, .erl, etc.
+  callback = function()
+    -- Use matchaddpos or matchadd. 
+    -- The priority (10) ensures it sits above standard syntax highlighting
+    vim.fn.matchadd("ExtraWhitespace", [[\s\+$]], 10)
+  end,
+})
+
+-- for erlang and DTL
+vim.api.nvim_create_autocmd("BufWritePost", {
+    pattern = "*.dtl",
+    callback = function()
+      local host = vim.fn.hostname()
+      local node = "war@" .. host
+      local ts = os.time()
+      vim.fn.jobstart(
+        {
+          "erl",
+          "-hidden",
+          "-sname", "dtl_reload_" .. ts,
+          "-setcookie", "war_cookie",
+          "-noshell",
+          "-eval", string.format("rpc:call('%s', war_app, load_html, []), init:stop()", node),
+        },
+        {
+          on_exit = function(_, code)
+            if code == 0 then
+              vim.notify("DTL compiled", vim.log.levels.INFO)
+            else
+              vim.notify("DTL compile failed — is the BEAM running?", vim.log.levels.WARN)
+            end
+          end,
+        }
+      )
+    end,
+  })
